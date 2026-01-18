@@ -1,0 +1,24 @@
+Questions to finalize a precise plan
+Primary goal: brochure site, blog, SaaS product, e-commerce, or portfolio? - Its a different category. It would be a website about me, my activities, my hobbies (my music and photo collection), my blogs (could be technical, philosphical or anything else)
+Who will edit content (developers only or non-technical editors)? - It would be non technical person editing the content
+Key features required (auth, payments, admin panel, search, user data, integrations)? - These are not required in initial iteration but good to have later.
+Expected traffic and scale (low, medium, high)? - It should be low traffic as it is not intended to add users. It would be mostly know about me and at most a low portfolio sales (much later).
+SEO importance and content frequency (high/regular vs rare)? - Explain this [please]
+Preferred hosting or budget constraints? - viksphere.in is already hosted on godaddy.com. What would be needed to host the develop contents to hosted domain.
+Timeline and team size/skillset? - One person, no time constraints
+Any required tech stack constraints (must use .NET, PHP, etc.) or existing infra? - No existing infra. Most probably I'd host on any cloud infra or suggest any cheaper way.
+Domain already owned and any legal/regulatory requirements (GDPR, etc.)? domain owned. No GDPR requirement I assume.
+
+Questions to finalize choices (answer any/all)
+CMS preference: Sanity (editor UX) or Git-based (Netlify CMS) or want my recommendation? -  Your recommendation please
+Approximate number of photos and max file size per photo? (affects Cloudinary vs repo storage) - more than 1000. Each photo approx 6MB
+Do you want blog comments or newsletter later? - Yes
+Contact form: simple email-to-you (Formspree) or store messages in CMS/database? - I'd suggest CMS/database
+Admin auth: simple password-protected page or CMS user roles (Sanity handles this)? - As of now suimple password protected page
+Visual style: minimal/clean, portfolio-first, dark-mode preference? dark mode preference.
+Do you want I set up the repo and an initial Next.js scaffold and deploy preview to Vercel for you? (I can provide step-by-step or make the repo locally) - Yes go ahead.
+
+What's next:
+
+Confirm choices so I can scaffold features: pick CMS (I recommend Sanity), image hosting (I recommend Cloudinary), and deployment target (Vercel is easiest). - Please proced with the recommendations.
+If confirmed, I'll implement the initial scaffold: pages, Sanity schemas, Cloudinary integration, admin toggles, dark mode, contact form, and docs.
