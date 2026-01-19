@@ -29,7 +29,7 @@
 
     <!-- UI box -->
     <rect class="box" x="16" y="64" width="230" height="56" rx="6" />
-    <text class="label" x="28" y="96">UI: app/* (pages & components)</text>
+    <text class="label" x="28" y="96">UI: app/* (pages &amp; components)</text>
 
     <!-- Image resolver -->
     <rect class="box" x="270" y="64" width="230" height="56" rx="6" />
