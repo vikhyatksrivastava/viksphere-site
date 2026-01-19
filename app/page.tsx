@@ -8,7 +8,12 @@ import { resolveImage } from '../lib/image'
 export default function Home() {
 
   function getActivityTime(act: { slug: string; date?: string }) {
-    // Try to extract YYYYMMDD or YYYY from the slug first
+    // Prefer the explicit activity.date field when present
+    if (act.date) {
+      const d = new Date(act.date)
+      if (!Number.isNaN(d.getTime())) return d.getTime()
+    }
+    // Try to extract YYYYMMDD or YYYY from the slug as a fallback
     const m8 = act.slug.match(/(\d{8})/)
     if (m8) {
       const s = m8[1]
@@ -22,18 +27,18 @@ export default function Home() {
     if (m4) {
       const yyyy = Number(m4[1])
       const d = new Date(yyyy, 0, 1)
-      if (!Number.isNaN(d.getTime())) return d.getTime()
-    }
-    // Fallback to activity.date field
-    if (act.date) {
-      const d = new Date(act.date)
       if (!Number.isNaN(d.getTime())) return d.getTime()
     }
     return 0
   }
 
   function getActivityDate(act: { slug: string; date?: string }) {
-    // Try to extract YYYYMMDD or YYYY from the slug first
+    // Prefer the explicit activity.date field when present
+    if (act.date) {
+      const d = new Date(act.date)
+      if (!Number.isNaN(d.getTime())) return d
+    }
+    // Try to extract YYYYMMDD or YYYY from the slug as a fallback
     const m8 = act.slug.match(/(\d{8})/)
     if (m8) {
       const s = m8[1]
@@ -47,11 +52,6 @@ export default function Home() {
     if (m4) {
       const yyyy = Number(m4[1])
       const d = new Date(yyyy, 0, 1)
-      if (!Number.isNaN(d.getTime())) return d
-    }
-    // Fallback to activity.date field
-    if (act.date) {
-      const d = new Date(act.date)
       if (!Number.isNaN(d.getTime())) return d
     }
     return null
