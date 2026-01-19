@@ -13,6 +13,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head>
         <link rel="icon" href={`/api/r2?key=favicon.png`} />
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2985339146715287"
+          crossOrigin="anonymous"></script>
       </head>
       <body>
         <div className="min-h-screen flex flex-col">
