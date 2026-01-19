@@ -34,6 +34,20 @@ export default async function BlogPage() {
     // ignore
   }
 
+  // If ogImage is an external absolute URL, verify it's actually an image
+  try {
+    if (ogImage && typeof ogImage === 'string' && /^https?:\/\//i.test(ogImage)) {
+      const headRes = await fetch(ogImage, { method: 'HEAD', headers: { 'User-Agent': 'Mozilla/5.0' } })
+      const ct = headRes.headers.get('content-type') || ''
+      if (!ct.startsWith('image/')) {
+        ogImage = '/images/photos/landscape-01.svg'
+      }
+    }
+  } catch (e) {
+    // If HEAD fails, fall back to local preview
+    ogImage = '/images/photos/landscape-01.svg'
+  }
+
   return (
     <main className="container-max px-6 py-12">
       <h1 className="text-3xl font-semibold">Blog</h1>
