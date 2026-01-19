@@ -48,6 +48,12 @@ export default async function BlogPage() {
     ogImage = '/images/photos/landscape-01.svg'
   }
 
+  // Prefer a local thumbnail when the resolved ogImage is an external URL
+  let displayImage = '/images/photos/landscape-01.svg'
+  if (ogImage && typeof ogImage === 'string' && !/^\/api\/r2|^https?:\/\//i.test(ogImage)) {
+    displayImage = ogImage
+  }
+
   return (
     <main className="container-max px-6 py-12">
       <h1 className="text-3xl font-semibold">Blog</h1>
@@ -60,11 +66,7 @@ export default async function BlogPage() {
           rel="noopener noreferrer"
         >
           <article className="p-4 bg-[var(--surface-muted)] dark:bg-slate-800 rounded-[var(--radius-md)] shadow-card hover:shadow-lg transition-transform transform hover:-translate-y-0.5 flex gap-4">
-            {ogImage ? (
-              <img src={ogImage} alt="preview" className="w-40 h-28 object-cover rounded-md" />
-            ) : (
-              <div className="w-40 h-28 bg-slate-200 dark:bg-slate-700 rounded-md" />
-            )}
+            <img src={displayImage} alt="preview" className="w-40 h-28 object-cover rounded-md" />
 
             <div className="flex-1">
               <h2 className="text-xl font-medium">Why games struggle to simulate India — preview</h2>
