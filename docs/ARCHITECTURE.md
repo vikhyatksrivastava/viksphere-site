@@ -1,5 +1,8 @@
 # Project Architecture — Viksphere Site
 
+<!-- Visual architecture diagram -->
+![Architecture diagram](architecture.svg)
+
 This document summarizes the architecture, request flows, key files, and useful commands for the Viksphere site.
 
 ---
