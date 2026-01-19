@@ -1,7 +1,10 @@
 # Project Architecture — Viksphere Site
 
-<!-- Visual architecture diagram -->
-![Architecture diagram](architecture.svg)
+<!-- Visual architecture diagram (PNG fallback for environments that don't render inline SVG) -->
+<picture>
+	<source srcset="architecture.png" type="image/png">
+	<img src="architecture.svg" alt="Architecture diagram">
+</picture>
 
 This document summarizes the architecture, request flows, key files, and useful commands for the Viksphere site.
 

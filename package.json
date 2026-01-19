@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "generate:architecture": "node scripts/svg-to-png.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init"
   },
@@ -25,6 +26,7 @@
     "autoprefixer": "^10.4.0",
     "postcss": "^8.4.0",
     "prisma": "^5.0.0",
+    "sharp": "^0.32.6",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.0.0"
   }
