@@ -51,6 +51,13 @@ export function resolveImage(src?: string | null) {
   // Normalize leading slashes
   const cleaned = src.replace(/^public[\\/]/, '/').replace(/^([^/])/, (s) => '/' + s)
 
+  // If this is a local public image under /images, serve it directly (no R2 presign).
+  // This avoids proxying public assets through /api/r2 which expects objects in R2.
+  if (cleaned.startsWith('/images/')) {
+    if (base) return base.replace(/\/$/, '') + cleaned
+    return cleaned
+  }
+
   if (base && cleaned.startsWith('/')) {
     // ensure no duplicate slashes
     return base.replace(/\/$/, '') + cleaned

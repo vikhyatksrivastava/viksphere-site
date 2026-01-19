@@ -54,6 +54,8 @@ export default async function BlogPage() {
     displayImage = ogImage
   }
 
+  
+
   return (
     <main className="container-max px-6 py-12">
       <h1 className="text-3xl font-semibold">Blog</h1>

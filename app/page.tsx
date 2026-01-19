@@ -71,6 +71,8 @@ export default function Home() {
             const featured: { src: string; alt?: string }[] = []
             const sorted = activities.slice().sort((a, b) => (getActivityTime(b) - getActivityTime(a)))
             for (const act of sorted) {
+              // Only consider photo activities for the featured gallery
+              if ((act as any).kind && (act as any).kind !== 'photo') continue
               if (featured.length >= 6) break
               try {
                 const dir = path.join(process.cwd(), 'public', 'images', 'photos', act.slug)
@@ -105,7 +107,8 @@ export default function Home() {
                 <a key={act.slug} href={`/photos/${act.slug}`} className="block p-4 bg-[var(--surface-muted)] dark:bg-slate-800 rounded-md shadow-card hover:shadow-lg">
                   <div className="flex items-center gap-4">
                     {(() => {
-                      const cover = act.cover
+                      // For blog activities, prefer a known local fallback thumbnail that will load reliably
+                      const cover = (act as any).kind === 'blog' ? '/images/photos/landscape-01.svg' : act.cover
                       const src = cover
                         ? resolveImage(cover.startsWith('http') ? cover : cover.replace(/^public[\\/]/, '/').replace(/^[^/]/, (s) => '/' + s))
                         : null
