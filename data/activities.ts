@@ -14,6 +14,7 @@ export const activities: Activity[] = [
     date: '2026-01-18',
     excerpt: 'Preview of my LinkedIn article on simulation and representation in games.',
     cover: 'photos/landscape-01.svg',
+    kind: 'blog',
     content: '<p>Original post on LinkedIn: <a href="https://www.linkedin.com/pulse/why-games-struggle-simulate-india-what-reveals-indian-srivastava-lso4e" target="_blank" rel="noopener noreferrer">Read on LinkedIn</a></p>'
   },
   {

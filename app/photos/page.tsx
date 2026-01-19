@@ -10,6 +10,8 @@ export default function PhotosPage() {
   // Build album list from activities: prefer first image in folder, else activity.cover
   const albums: { slug: string; title: string; excerpt?: string; src?: string }[] = []
   for (const act of activities.slice().sort((a, b) => (new Date(b.date).getTime() - new Date(a.date).getTime()))) {
+    // Skip non-photo activities (e.g., blog/external posts)
+    if ((act as any).kind && (act as any).kind !== 'photo') continue
     let img: string | undefined = undefined
     try {
       const dir = path.join(process.cwd(), 'public', 'images', 'photos', act.slug)
