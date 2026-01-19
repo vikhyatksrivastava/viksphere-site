@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '../../../lib/db'
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null)
   if (!body || !body.message) return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
 
   try {
+    const { prisma } = await import('../../../lib/db')
     const msg = await prisma.contactMessage.create({ data: {
       name: body.name || null,
       email: body.email || null,
