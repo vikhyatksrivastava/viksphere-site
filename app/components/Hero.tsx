@@ -14,6 +14,8 @@ export default function Hero() {
             <p className="mt-4 text-lg text-slate-700 dark:text-slate-300 max-w-xl">Personal site for my photography, music, writing, and projects — a curated space for ideas, artifacts, and experiments.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a href="/blog" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-md">Read my blog</a>
+              <a href="/photos" className="inline-flex items-center gap-2 px-4 py-2 bg-white/90 dark:bg-slate-700 text-slate-900 dark:text-white rounded-md border border-slate-200">View photos</a>
+              <a href="/music" className="inline-flex items-center gap-2 px-4 py-2 bg-white/90 dark:bg-slate-700 text-slate-900 dark:text-white rounded-md border border-slate-200">Listen</a>
             </div>
           </div>
           <div className="relative w-full h-36 lg:h-44 rounded-[var(--radius-md)] overflow-hidden shadow-card bg-slate-50 dark:bg-slate-900">
