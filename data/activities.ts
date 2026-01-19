@@ -4,6 +4,7 @@ export type Activity = {
   date: string // ISO
   excerpt?: string
   cover?: string // path under /images/
+  kind?: 'photo' | 'blog'
   content?: string // full HTML or markdown (kept simple)
 }
 
