@@ -9,6 +9,14 @@ export type Activity = {
 
 export const activities: Activity[] = [
   {
+    slug: 'linkedin-why-games-2026',
+    title: 'Why games struggle to simulate India — preview',
+    date: '2026-01-18',
+    excerpt: 'Preview of my LinkedIn article on simulation and representation in games.',
+    cover: 'photos/landscape-01.svg',
+    content: '<p>Original post on LinkedIn: <a href="https://www.linkedin.com/pulse/why-games-struggle-simulate-india-what-reveals-indian-srivastava-lso4e" target="_blank" rel="noopener noreferrer">Read on LinkedIn</a></p>'
+  },
+  {
     slug: 'barcelona-new-year-2026',
     title: 'Barcelona — New Year Celebration 2026',
     date: '2026-01-01',
