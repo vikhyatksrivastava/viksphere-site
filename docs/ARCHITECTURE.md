@@ -16,6 +16,8 @@ flowchart LR
 	Nextjs --> R2
 	Nextjs --> CDN
 
+```
+
 ## High-level Diagram (text)
 
 Browser → Next.js app (Server + Client)
