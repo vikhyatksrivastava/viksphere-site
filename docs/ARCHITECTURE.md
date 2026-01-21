@@ -7,7 +7,14 @@ This document summarizes the architecture, request flows, key files, and useful 
 
 ```mermaid
 
----
+flowchart LR
+	Browser[Browser]
+	Nextjs[Next.js app\n(Server + Client)]
+	R2[Cloudflare R2]
+	CDN[Public CDN]
+	Browser --> Nextjs
+	Nextjs --> R2
+	Nextjs --> CDN
 
 ## High-level Diagram (text)
 
