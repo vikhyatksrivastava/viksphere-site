@@ -1,12 +1,8 @@
 # Project Architecture — Viksphere Site
 
-<!-- Visual architecture diagram (PNG fallback for environments that don't render inline SVG) -->
-<picture>
-
 This document summarizes the architecture, request flows, key files, and useful commands for the Viksphere site.
 
 ---
-# Project Architecture — Viksphere Site
 
 <!-- Editable architecture diagram (Mermaid) -->
 
@@ -40,7 +36,13 @@ flowchart LR
 	classDef smallText fill:#fff,stroke:#fff,color:#666
 ```
 
-This document summarizes the architecture, request flows, key files, and useful commands for the Viksphere site.
+```
+
+<!-- PNG fallback for viewers that don't render Mermaid -->
+<picture>
+	<source srcset="architecture.png" type="image/png">
+	<img src="architecture.png" alt="Architecture diagram" />
+</picture>
 
 ---
 
