@@ -8,12 +8,8 @@ import { resolveImage } from '../lib/image'
 export default function Home() {
 
   function getActivityTime(act: { slug: string; date?: string }) {
-    // Prefer the explicit activity.date field when present
-    if (act.date) {
-      const d = new Date(act.date)
-      if (!Number.isNaN(d.getTime())) return d.getTime()
-    }
-    // Try to extract YYYYMMDD or YYYY from the slug as a fallback
+    // Prefer an explicit YYYYMMDD in the slug first, then activity.date, then YYYY in slug
+    // Try to extract YYYYMMDD from the slug first
     const m8 = act.slug.match(/(\d{8})/)
     if (m8) {
       const s = m8[1]
@@ -23,6 +19,12 @@ export default function Home() {
       const d = new Date(yyyy, mm, dd)
       if (!Number.isNaN(d.getTime())) return d.getTime()
     }
+    // Prefer the explicit activity.date field when present
+    if (act.date) {
+      const d = new Date(act.date)
+      if (!Number.isNaN(d.getTime())) return d.getTime()
+    }
+    // Try to extract year-only from the slug as a fallback
     const m4 = act.slug.match(/(\d{4})/)
     if (m4) {
       const yyyy = Number(m4[1])
@@ -33,12 +35,7 @@ export default function Home() {
   }
 
   function getActivityDate(act: { slug: string; date?: string }) {
-    // Prefer the explicit activity.date field when present
-    if (act.date) {
-      const d = new Date(act.date)
-      if (!Number.isNaN(d.getTime())) return d
-    }
-    // Try to extract YYYYMMDD or YYYY from the slug as a fallback
+    // Prefer explicit YYYYMMDD in slug first, then activity.date, then year-only in slug
     const m8 = act.slug.match(/(\d{8})/)
     if (m8) {
       const s = m8[1]
@@ -46,6 +43,10 @@ export default function Home() {
       const mm = Number(s.slice(4, 6)) - 1
       const dd = Number(s.slice(6, 8))
       const d = new Date(yyyy, mm, dd)
+      if (!Number.isNaN(d.getTime())) return d
+    }
+    if (act.date) {
+      const d = new Date(act.date)
       if (!Number.isNaN(d.getTime())) return d
     }
     const m4 = act.slug.match(/(\d{4})/)
@@ -99,33 +100,47 @@ export default function Home() {
 
         <div className="mt-8">
           <h3 className="text-xl font-semibold">Latest</h3>
-          <div className="mt-4 space-y-4">
-            {activities
-              .slice()
-              .sort((a, b) => getActivityTime(b) - getActivityTime(a))
-              .map((act) => (
-                <a key={act.slug} href={`/photos/${act.slug}`} className="block p-4 bg-[var(--surface-muted)] dark:bg-slate-800 rounded-md shadow-card hover:shadow-lg">
-                  <div className="flex items-center gap-4">
-                    {(() => {
-                      // For blog activities, prefer a known local fallback thumbnail that will load reliably
-                      const cover = (act as any).kind === 'blog' ? '/images/photos/landscape-01.svg' : act.cover
-                      const src = cover
-                        ? resolveImage(cover.startsWith('http') ? cover : cover.replace(/^public[\\/]/, '/').replace(/^[^/]/, (s) => '/' + s))
-                        : null
-                      return src ? (
-                        <img src={src} alt="cover" className="w-28 h-20 object-cover rounded" />
-                      ) : (
-                        <div className="w-28 h-20 bg-slate-200 dark:bg-slate-700 rounded" />
-                      )
-                    })()}
-                    <div>
-                      <div className="text-lg font-medium">{act.title}</div>
-                      <div className="text-sm text-slate-500">{formatActivityDate(getActivityDate(act)) || act.date}</div>
-                      {act.excerpt && <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{act.excerpt}</p>}
-                    </div>
+          <div className="mt-4 space-y-6">
+            {(() => {
+              // Group activities by month-year
+              const groups: Record<string, { label: string; items: typeof activities }> = {}
+              for (const act of activities.slice().sort((a, b) => getActivityTime(b) - getActivityTime(a))) {
+                const d = getActivityDate(act)
+                const key = d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` : 'unknown'
+                if (!groups[key]) groups[key] = { label: d ? d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }).replace(' ', '-') : 'Unknown', items: [] }
+                groups[key].items.push(act)
+              }
+              const keys = Object.keys(groups).sort((a, b) => (a < b ? 1 : -1))
+              return keys.map((k) => (
+                <section key={k}>
+                  <h4 className="text-lg font-medium">{groups[k].label}</h4>
+                  <div className="mt-3 space-y-4">
+                    {groups[k].items.map((act) => (
+                      <a key={act.slug} href={`/photos/${act.slug}`} className="block p-4 bg-[var(--surface-muted)] dark:bg-slate-800 rounded-md shadow-card hover:shadow-lg">
+                        <div className="flex items-center gap-4">
+                          {(() => {
+                            const cover = (act as any).kind === 'blog' ? '/images/photos/landscape-01.svg' : act.cover
+                            const src = cover
+                              ? resolveImage(cover.startsWith('http') ? cover : cover.replace(/^public[\\/]/, '/').replace(/^[^/]/, (s) => '/' + s))
+                              : null
+                            return src ? (
+                              <img src={src} alt="cover" className="w-28 h-20 object-cover rounded" />
+                            ) : (
+                              <div className="w-28 h-20 bg-slate-200 dark:bg-slate-700 rounded" />
+                            )
+                          })()}
+                          <div>
+                            <div className="text-lg font-medium">{act.title}</div>
+                            <div className="text-sm text-slate-500">{formatActivityDate(getActivityDate(act)) || act.date}</div>
+                            {act.excerpt && <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{act.excerpt}</p>}
+                          </div>
+                        </div>
+                      </a>
+                    ))}
                   </div>
-                </a>
-              ))}
+                </section>
+              ))
+            })()}
           </div>
         </div>
       </section>
