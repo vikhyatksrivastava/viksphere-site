@@ -9,7 +9,7 @@ This document summarizes the architecture, request flows, key files, and useful 
 
 flowchart LR
 	Browser[Browser]
-	Nextjs[Next.js app\n(Server + Client)]
+	Nextjs["Next.js app<br/> (Server + Client)"]
 	R2[Cloudflare R2]
 	CDN[Public CDN]
 	Browser --> Nextjs
