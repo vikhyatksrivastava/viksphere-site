@@ -3,46 +3,9 @@
 This document summarizes the architecture, request flows, key files, and useful commands for the Viksphere site.
 
 ---
-
 <!-- Editable architecture diagram (Mermaid) -->
 
 ```mermaid
-flowchart LR
-  Browser["Browser<br/><small>User agent</small>"]
-  Next["Next.js App<br/><small>Server + Client</small>"]
-  UI["UI<br/><small>app/*</small>"]
-  ImageResolver["Image resolver<br/><small>lib/image.ts</small>"]
-  API["Presign API<br/><small>app/api/r2/route.ts</small>"]
-  R2["Cloudflare R2<br/><small>images (private)</small>"]
-  Public["Public images<br/><small>public/images/* (static)</small>"]
-  Sanity["Sanity (CMS)"]
-  DB["Prisma / Postgres (DB)"]
-  Cloudinary["Cloudinary<br/><small>optional CDN/transform</small>"]
-  Scripts["Scripts<br/><small>scripts/*</small>"]
-
-	Browser --> Next
-	Next --> UI
-	Next --> ImageResolver
-	ImageResolver --> Public
-	ImageResolver --> API
-	API --> R2
-	Browser -.-> R2["Browser (follows 302 to presigned R2 URL)"]
-	Next --> Sanity
-	Next --> DB
-	Scripts --> Cloudinary
-	Scripts --> R2
-	Cloudinary --> Public
-
-	classDef smallText fill:#fff,stroke:#fff,color:#666
-```
-
-```
-
-<!-- PNG fallback for viewers that don't render Mermaid -->
-<picture>
-	<source srcset="architecture.png" type="image/png">
-	<img src="architecture.png" alt="Architecture diagram" />
-</picture>
 
 ---
 
@@ -54,13 +17,6 @@ Next.js app components:
 - UI: `app/*` (pages & components)
 - Image resolver: `lib/image.ts` — maps image references to either public CDN or presign proxy
 - Presign API: `app/api/r2/route.ts` (generates presigned R2 URLs)
-- R2 helper: `lib/r2.ts` (server-side listing)
-- Scripts: `scripts/*` (list-r2, test-presign-and-fetch, check-images)
-
-Storage:
-- Local: `public/images/*` (dev, fallback)
-- Cloudflare R2: `images` bucket (private) — served via presigned URLs
-
 Data / DB / CMS:
 - Local metadata: `data/activities.ts`
 - Optional CMS: `sanity/schema/...`
@@ -82,26 +38,13 @@ This pattern keeps R2 private while allowing the browser to request images direc
 
 ## Key files and responsibilities
 
-- `app/layout.tsx` — global layout (Nav, Hero)
-- `app/components/Hero.tsx` — hero UI (uses `resolveImage`)
-- `app/components/LightboxGallery.tsx` — client-side gallery/lightbox (uses `<img>` for external/signed URLs)
-- `app/photos/[slug]/page.tsx` — photo album page; lists local `public/images` or falls back to `lib/r2.ts` listing
-- `app/api/r2/route.ts` — presign endpoint (S3Client + `getSignedUrl`)
-- `lib/image.ts` — resolveImage, isExternalImage; rewrites account URLs to `/api/r2?key=...`
 - `lib/r2.ts` — server helper: list R2 keys by prefix
 - `scripts/list-r2.js` — list objects script (reads `.env.local`)
 - `scripts/test-presign-and-fetch.js` — generate signed URL and fetch to verify
-- `scripts/check-images.js` — scans pages and follows image redirects for verification
-
 ---
-
 ## Environment variables (.env.local)
 
 - `R2_ACCOUNT_ID` — Cloudflare R2 account id
-- `R2_BUCKET` — R2 bucket name (e.g., `images`)
-- `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` — R2 access keys
-- `NEXT_PUBLIC_IMAGE_BASE` — (optional) public CDN base for images
-- `DATABASE_URL` — (optional) for Prisma if used
 
 Keep secrets out of version control.
 
@@ -111,7 +54,6 @@ Keep secrets out of version control.
 
 Run in project root:
 
-```bash
 # Install deps
 npm install
 
