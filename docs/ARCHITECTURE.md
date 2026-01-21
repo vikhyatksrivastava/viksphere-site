@@ -2,9 +2,6 @@
 
 <!-- Visual architecture diagram (PNG fallback for environments that don't render inline SVG) -->
 <picture>
-	<source srcset="architecture.png" type="image/png">
-	<img src="architecture.svg" alt="Architecture diagram">
-</picture>
 
 This document summarizes the architecture, request flows, key files, and useful commands for the Viksphere site.
 
@@ -15,17 +12,17 @@ This document summarizes the architecture, request flows, key files, and useful 
 
 ```mermaid
 flowchart LR
-	Browser["Browser<br/><small>User agent</small>"]
-	Next["Next.js App<br/><small>Server + Client</small>"]
-	UI["UI<br/><small>app/*</small>"]
-	ImageResolver["Image resolver<br/><small>lib/image.ts</small>"]
-	API["Presign API<br/><small>app/api/r2/route.ts</small>"]
-	R2["Cloudflare R2<br/><small>images (private)</small>"]
-	Public["Public images<br/><small>public/images/* (static)</small>"]
-	Sanity["Sanity (CMS)"]
-	DB["Prisma / Postgres (DB)"]
-	Cloudinary["Cloudinary<br/><small>optional CDN/transform</small>"]
-	Scripts["Scripts<br/><small>scripts/*</small>"]
+  Browser["Browser<br/><small>User agent</small>"]
+  Next["Next.js App<br/><small>Server + Client</small>"]
+  UI["UI<br/><small>app/*</small>"]
+  ImageResolver["Image resolver<br/><small>lib/image.ts</small>"]
+  API["Presign API<br/><small>app/api/r2/route.ts</small>"]
+  R2["Cloudflare R2<br/><small>images (private)</small>"]
+  Public["Public images<br/><small>public/images/* (static)</small>"]
+  Sanity["Sanity (CMS)"]
+  DB["Prisma / Postgres (DB)"]
+  Cloudinary["Cloudinary<br/><small>optional CDN/transform</small>"]
+  Scripts["Scripts<br/><small>scripts/*</small>"]
 
 	Browser --> Next
 	Next --> UI
