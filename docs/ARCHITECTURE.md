@@ -9,6 +9,43 @@
 This document summarizes the architecture, request flows, key files, and useful commands for the Viksphere site.
 
 ---
+# Project Architecture — Viksphere Site
+
+<!-- Editable architecture diagram (Mermaid) -->
+
+```mermaid
+flowchart LR
+	Browser["Browser<br/><small>User agent</small>"]
+	Next["Next.js App<br/><small>Server + Client</small>"]
+	UI["UI<br/><small>app/*</small>"]
+	ImageResolver["Image resolver<br/><small>lib/image.ts</small>"]
+	API["Presign API<br/><small>app/api/r2/route.ts</small>"]
+	R2["Cloudflare R2<br/><small>images (private)</small>"]
+	Public["Public images<br/><small>public/images/* (static)</small>"]
+	Sanity["Sanity (CMS)"]
+	DB["Prisma / Postgres (DB)"]
+	Cloudinary["Cloudinary<br/><small>optional CDN/transform</small>"]
+	Scripts["Scripts<br/><small>scripts/*</small>"]
+
+	Browser --> Next
+	Next --> UI
+	Next --> ImageResolver
+	ImageResolver --> Public
+	ImageResolver --> API
+	API --> R2
+	Browser -.-> R2["Browser (follows 302 to presigned R2 URL)"]
+	Next --> Sanity
+	Next --> DB
+	Scripts --> Cloudinary
+	Scripts --> R2
+	Cloudinary --> Public
+
+	classDef smallText fill:#fff,stroke:#fff,color:#666
+```
+
+This document summarizes the architecture, request flows, key files, and useful commands for the Viksphere site.
+
+---
 
 ## High-level Diagram (text)
 
@@ -118,4 +155,4 @@ node scripts/check-images.js
 
 ---
 
-If you want, I can also generate a visual SVG/PNG of this diagram and add it to `docs/architecture.png` (or embed the diagram in `README.md`).
+If you want, I can also export this Mermaid diagram to a PNG and add it to `docs/architecture.png` as a visual fallback.
