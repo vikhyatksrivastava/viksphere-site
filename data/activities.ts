@@ -19,6 +19,15 @@ export const activities: Activity[] = [
     content: '<p>Original post on LinkedIn: <a href="https://www.linkedin.com/pulse/why-games-struggle-simulate-india-what-reveals-indian-srivastava-lso4e" target="_blank" rel="noopener noreferrer">Read on LinkedIn</a></p>'
   },
   {
+    slug: 'linkedin-development-ai-2026',
+    title: 'Development — How AI Made It Easy',
+    date: '2026-02-15',
+    excerpt: 'A short note linking to my LinkedIn article about how AI is changing development workflows.',
+    cover: 'photos/landscape-01.svg',
+    kind: 'blog',
+    content: '<p>Original post on LinkedIn: <a href="https://www.linkedin.com/pulse/development-how-ai-made-easy-vikhyat-kumar-srivastava-u3gbe/" target="_blank" rel="noopener noreferrer">Read on LinkedIn</a></p>'
+  },
+  {
     slug: 'barcelona-new-year-2026',
     title: 'Barcelona — New Year Celebration 2026',
     date: '2026-01-01',

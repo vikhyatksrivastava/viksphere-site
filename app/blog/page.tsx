@@ -71,11 +71,19 @@ export default async function BlogPage() {
         {(() => {
           const posts = [
             {
-              title: 'Why games struggle to simulate India — preview',
-              excerpt: excerpt ?? 'Preview unavailable. Click to read the original on LinkedIn.',
+              title: 'Why games struggle to simulate India — What this reveals about Indian culture',
+              excerpt: excerpt ?? 'Click to read the original on LinkedIn.',
               url,
               image: displayImage,
               date: publishedAt,
+              source: 'LinkedIn',
+            },
+            {
+              title: 'Development — How AI Made It Easy',
+              excerpt: 'Click to read the original on LinkedIn.',
+              url: 'https://www.linkedin.com/pulse/development-how-ai-made-easy-vikhyat-kumar-srivastava-u3gbe/',
+              image: displayImage,
+              date: '2026-02-15',
               source: 'LinkedIn',
             },
           ]
@@ -83,9 +91,9 @@ export default async function BlogPage() {
           // Group posts by month-year
           const groups: Record<string, { label: string; items: typeof posts }> = {}
           for (const p of posts.sort((a, b) => {
-            const da = a.date ? new Date(a.date).getTime() : 0
-            const db = b.date ? new Date(b.date).getTime() : 0
-            return db - da
+            const ta = a.date ? new Date(a.date).getTime() : Number.POSITIVE_INFINITY
+            const tb = b.date ? new Date(b.date).getTime() : Number.POSITIVE_INFINITY
+            return ta - tb
           })) {
             const d = p.date ? new Date(p.date) : null
             const key = d && !Number.isNaN(d.getTime()) ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` : 'unknown'
