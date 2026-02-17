@@ -58,6 +58,12 @@ export default function Home() {
     return null
   }
 
+  function extractUrlFromContent(content?: string) {
+    if (!content) return null
+    const m = content.match(/href=["']([^"']+)["']/i)
+    return m ? m[1] : null
+  }
+
   function formatActivityDate(d: Date | null) {
     if (!d) return ''
     return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
@@ -110,33 +116,39 @@ export default function Home() {
                 if (!groups[key]) groups[key] = { label: d ? d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }).replace(' ', '-') : 'Unknown', items: [] }
                 groups[key].items.push(act)
               }
+
               const keys = Object.keys(groups).sort((a, b) => (a < b ? 1 : -1))
               return keys.map((k) => (
                 <section key={k}>
                   <h4 className="text-lg font-medium">{groups[k].label}</h4>
                   <div className="mt-3 space-y-4">
-                    {groups[k].items.map((act) => (
-                      <a key={act.slug} href={`/photos/${act.slug}`} className="block p-4 bg-[var(--surface-muted)] dark:bg-slate-800 rounded-md shadow-card hover:shadow-lg">
-                        <div className="flex items-center gap-4">
-                          {(() => {
-                            const cover = (act as any).kind === 'blog' ? '/images/photos/landscape-01.svg' : act.cover
-                            const src = cover
-                              ? resolveImage(cover.startsWith('http') ? cover : cover.replace(/^public[\\/]/, '/').replace(/^[^/]/, (s) => '/' + s))
-                              : null
-                            return src ? (
-                              <img src={src} alt="cover" className="w-28 h-20 object-cover rounded" />
-                            ) : (
-                              <div className="w-28 h-20 bg-slate-200 dark:bg-slate-700 rounded" />
-                            )
-                          })()}
-                          <div>
-                            <div className="text-lg font-medium">{act.title}</div>
-                            <div className="text-sm text-slate-500">{formatActivityDate(getActivityDate(act)) || act.date}</div>
-                            {act.excerpt && <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{act.excerpt}</p>}
+                    {groups[k].items.map((act) => {
+                      const isBlog = (act as any).kind === 'blog'
+                      const externalUrl = isBlog ? ((act as any).url || extractUrlFromContent(act.content)) : null
+                      const href = externalUrl || `/photos/${act.slug}`
+                      return (
+                        <a key={act.slug} href={href} target={externalUrl ? '_blank' : undefined} rel={externalUrl ? 'noopener noreferrer' : undefined} className="block p-4 bg-[var(--surface-muted)] dark:bg-slate-800 rounded-md shadow-card hover:shadow-lg">
+                          <div className="flex items-center gap-4">
+                            {(() => {
+                              const cover = (act as any).kind === 'blog' ? '/images/photos/landscape-01.svg' : act.cover
+                              const src = cover
+                                ? resolveImage(cover.startsWith('http') ? cover : cover.replace(/^public[\\/]/, '/').replace(/^[^/]/, (s) => '/' + s))
+                                : null
+                              return src ? (
+                                <img src={src} alt="cover" className="w-28 h-20 object-cover rounded" />
+                              ) : (
+                                <div className="w-28 h-20 bg-slate-200 dark:bg-slate-700 rounded" />
+                              )
+                            })()}
+                            <div>
+                              <div className="text-lg font-medium">{act.title}</div>
+                              <div className="text-sm text-slate-500">{formatActivityDate(getActivityDate(act)) || act.date}</div>
+                              {act.excerpt && <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{act.excerpt}</p>}
+                            </div>
                           </div>
-                        </div>
-                      </a>
-                    ))}
+                        </a>
+                      )
+                    })}
                   </div>
                 </section>
               ))

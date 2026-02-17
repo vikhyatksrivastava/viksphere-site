@@ -2,6 +2,7 @@ export type Activity = {
   slug: string
   title: string
   date: string // ISO
+  url?: string
   excerpt?: string
   cover?: string // path under /images/
   kind?: 'photo' | 'blog'
@@ -16,15 +17,27 @@ export const activities: Activity[] = [
     excerpt: 'Preview of my LinkedIn article on simulation and representation in games.',
     cover: 'photos/landscape-01.svg',
     kind: 'blog',
+    url: 'https://www.linkedin.com/pulse/why-games-struggle-simulate-india-what-reveals-indian-srivastava-lso4e',
     content: '<p>Original post on LinkedIn: <a href="https://www.linkedin.com/pulse/why-games-struggle-simulate-india-what-reveals-indian-srivastava-lso4e" target="_blank" rel="noopener noreferrer">Read on LinkedIn</a></p>'
+  },
+  {
+    slug: 'linkedin-databricks-2026',
+    title: 'Databricks — A Simple Story of Data Lakes, Delta, Live Tables, Unity',
+    date: '2026-02-17',
+    excerpt: 'Click to read the original on LinkedIn.',
+    cover: 'photos/landscape-01.svg',
+    kind: 'blog',
+    url: 'https://www.linkedin.com/pulse/databricks-simple-story-data-lakes-delta-live-tables-unity-jkvtc/',
+    content: '<p>Original post on LinkedIn: <a href="https://www.linkedin.com/pulse/databricks-simple-story-data-lakes-delta-live-tables-unity-jkvtc/" target="_blank" rel="noopener noreferrer">Read on LinkedIn</a></p>'
   },
   {
     slug: 'linkedin-development-ai-2026',
     title: 'Development — How AI Made It Easy',
-    date: '2026-02-15',
+    date: '2026-01-27',
     excerpt: 'A short note linking to my LinkedIn article about how AI is changing development workflows.',
     cover: 'photos/landscape-01.svg',
     kind: 'blog',
+    url: 'https://www.linkedin.com/pulse/development-how-ai-made-easy-vikhyat-kumar-srivastava-u3gbe/',
     content: '<p>Original post on LinkedIn: <a href="https://www.linkedin.com/pulse/development-how-ai-made-easy-vikhyat-kumar-srivastava-u3gbe/" target="_blank" rel="noopener noreferrer">Read on LinkedIn</a></p>'
   },
   {

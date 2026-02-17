@@ -11,7 +11,8 @@ export default function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="relative z-20">
             <h1 className="text-2xl lg:text-3xl font-serif font-bold text-slate-900 dark:text-white">VikSphere</h1>
-            <p className="mt-4 text-lg text-slate-700 dark:text-slate-300 max-w-xl">Personal site for my photography, music, writing, and projects — a curated space for ideas, artifacts, and experiments.</p>
+            <p className="mt-4 text-lg text-slate-700 dark:text-slate-300 max-w-xl">This is my space, my sphere to share with the world. Explore my creations, thoughts, experiments and experiences. </p>
+            <p className="mt-2 text-sm text-slate-500">— Vikhyat</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a href="/blog" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-md">Read my blog</a>
               <a href="/photos" className="inline-flex items-center gap-2 px-4 py-2 bg-white/90 dark:bg-slate-700 text-slate-900 dark:text-white rounded-md border border-slate-200">View photos</a>

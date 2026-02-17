@@ -71,11 +71,19 @@ export default async function BlogPage() {
         {(() => {
           const posts = [
             {
+              title: 'Databricks — A Simple Story of Data Lakes, Delta, Live Tables, Unity',
+              excerpt: 'Click to read the original on LinkedIn.',
+              url: 'https://www.linkedin.com/pulse/databricks-simple-story-data-lakes-delta-live-tables-unity-jkvtc/',
+              image: displayImage,
+              date: '2026-02-17',
+              source: 'LinkedIn',
+            },
+            {
               title: 'Why games struggle to simulate India — What this reveals about Indian culture',
               excerpt: excerpt ?? 'Click to read the original on LinkedIn.',
               url,
               image: displayImage,
-              date: publishedAt,
+              date: '2026-01-18',
               source: 'LinkedIn',
             },
             {
@@ -83,7 +91,7 @@ export default async function BlogPage() {
               excerpt: 'Click to read the original on LinkedIn.',
               url: 'https://www.linkedin.com/pulse/development-how-ai-made-easy-vikhyat-kumar-srivastava-u3gbe/',
               image: displayImage,
-              date: '2026-02-15',
+              date: '2026-01-27',
               source: 'LinkedIn',
             },
           ]
@@ -91,9 +99,9 @@ export default async function BlogPage() {
           // Group posts by month-year
           const groups: Record<string, { label: string; items: typeof posts }> = {}
           for (const p of posts.sort((a, b) => {
-            const ta = a.date ? new Date(a.date).getTime() : Number.POSITIVE_INFINITY
-            const tb = b.date ? new Date(b.date).getTime() : Number.POSITIVE_INFINITY
-            return ta - tb
+            const ta = a.date ? new Date(a.date).getTime() : 0
+            const tb = b.date ? new Date(b.date).getTime() : 0
+            return tb - ta
           })) {
             const d = p.date ? new Date(p.date) : null
             const key = d && !Number.isNaN(d.getTime()) ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` : 'unknown'
