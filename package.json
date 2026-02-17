@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "jest",
     "lint": "next lint",
     "generate:architecture": "node scripts/svg-to-png.js",
     "prisma:generate": "prisma generate",
@@ -28,6 +29,13 @@
     "prisma": "^5.0.0",
     "sharp": "^0.32.6",
     "tailwindcss": "^3.4.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "jest": "^29.6.1",
+    "@types/jest": "^29.5.2",
+    "ts-jest": "^29.1.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "jsdom": "^22.1.0",
+    "jest-environment-jsdom": "^29.6.1"
   }
 }
