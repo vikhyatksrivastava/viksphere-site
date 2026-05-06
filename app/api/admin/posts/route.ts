@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '../../../../lib/requireAdmin'
 import { readJson, writeJson } from '../../../../lib/adminData'
 
@@ -31,6 +32,8 @@ export async function POST(request: Request) {
   const post: Post = { slug, title: body.title, url: body.url, excerpt: body.excerpt ?? '', date: body.date }
   posts.unshift(post)
   await writeJson('posts.json', posts)
+  revalidatePath('/blog')
+  revalidatePath('/')
 
   return NextResponse.json(post, { status: 201 })
 }
@@ -44,6 +47,8 @@ export async function DELETE(request: Request) {
 
   const posts = await readJson<Post[]>('posts.json', [])
   await writeJson('posts.json', posts.filter(p => p.slug !== slug))
+  revalidatePath('/blog')
+  revalidatePath('/')
 
   return NextResponse.json({ ok: true })
 }

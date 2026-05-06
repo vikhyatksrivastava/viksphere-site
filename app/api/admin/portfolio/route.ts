@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '../../../../lib/requireAdmin'
 import { readJson, writeJson } from '../../../../lib/adminData'
 
@@ -64,5 +65,7 @@ export async function PUT(request: Request) {
     links:          body.links          ?? current.links,
   }
   await writeJson('portfolio.json', updated)
+  revalidatePath('/vikhyat')
+  revalidatePath('/')
   return NextResponse.json(updated)
 }

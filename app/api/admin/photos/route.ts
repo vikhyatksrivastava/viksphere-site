@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '../../../../lib/requireAdmin'
 import { readJson, writeJson } from '../../../../lib/adminData'
 import { listKeys } from '../../../../lib/r2'
@@ -47,6 +48,8 @@ export async function POST(request: Request) {
   const album: Album = { slug, title, date, excerpt, cover: coverKey }
   albums.unshift(album)
   await writeJson('albums.json', albums)
+  revalidatePath('/photos')
+  revalidatePath('/')
 
   return NextResponse.json(album, { status: 201 })
 }
@@ -60,6 +63,8 @@ export async function DELETE(request: Request) {
 
   const albums = await readJson<Album[]>('albums.json', [])
   await writeJson('albums.json', albums.filter(a => a.slug !== slug))
+  revalidatePath('/photos')
+  revalidatePath('/')
 
   return NextResponse.json({ ok: true })
 }
