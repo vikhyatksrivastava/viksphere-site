@@ -49,6 +49,7 @@ export async function POST(request: Request) {
   albums.unshift(album)
   await writeJson('albums.json', albums)
   revalidatePath('/photos')
+  revalidatePath(`/photos/${slug}`)
   revalidatePath('/')
 
   return NextResponse.json(album, { status: 201 })

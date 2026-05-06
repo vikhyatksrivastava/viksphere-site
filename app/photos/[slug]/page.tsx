@@ -9,6 +9,17 @@ import { readJson } from '../../../lib/adminData'
 
 interface AdminAlbum { slug: string; title: string; date: string; excerpt: string; cover: string }
 
+// Pre-generate pages for all known admin albums + static activities at build time.
+// dynamicParams=true allows new slugs to be rendered on-demand.
+export const dynamicParams = true
+
+export async function generateStaticParams() {
+  const adminAlbums = await readJson<AdminAlbum[]>('albums.json', [])
+  const adminSlugs  = adminAlbums.map(a => ({ slug: a.slug }))
+  const actSlugs    = activities.map(a => ({ slug: a.slug }))
+  return [...adminSlugs, ...actSlugs]
+}
+
 function fmtDate(d: string | undefined) {
   if (!d) return ''
   const dt = new Date(d)
