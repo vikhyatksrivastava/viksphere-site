@@ -1,0 +1,91 @@
+{
+  "headline": "VikSphere",
+  "tagline": "This is my space, my sphere to share with the world. Explore my creations, thoughts, experiments and experiences.",
+  "bio": "— Vikhyat",
+  "name": "Vikhyat Kumar Srivastava",
+  "title": "Lead Data Engineer · Solution Designer · Big Data",
+  "location": "Greater Noida (West), Uttar Pradesh - India",
+  "about": "Product developer Lead with 15 years of experience in Data Engineering and Software Development. I design and build data platforms across GCP, AWS and Azure — from Spark pipelines and Medallion architectures to cloud migrations and Databricks lakehouses. Equally at home leading cross-functional teams, mentoring engineers, and writing about the ideas that fascinate me.",
+  "skills": [
+    "Apache Spark", "PySpark", "Scala", "Python", "Java",
+    "Databricks", "DBT", "BigQuery", "Dataproc", "Dataflow",
+    "AWS", "GCP", "Azure", "Hadoop / Big Data",
+    "SQL", "Hive", "Data Architecture", "ETL / ELT",
+    "Medallion Architecture", "CI/CD", "Git", "JIRA",
+    "Agile", "Team Leadership", "Next.js", "Photography"
+  ],
+  "experience": [
+    {
+      "id": "1",
+      "company": "Thoughtworks Inc.",
+      "role": "Lead Data Engineer",
+      "location": "Barcelona",
+      "period": "Aug 2025 – Jan 2026",
+      "description": "Developed a data model for a German retail company. Built an ingestion pipeline based on Medallion architecture using AWS S3 and SageMaker AI. Explored data extraction from coloured graphs using linear expressions and pioneered an AI-first system delivery process."
+    },
+    {
+      "id": "2",
+      "company": "Gainwell Technologies",
+      "role": "Lead Product Developer",
+      "location": "Bengaluru",
+      "period": "Nov 2024 – Jun 2025",
+      "description": "Integrated and implemented Databricks LakeFlow Connect to build data pipelines using PostgreSQL per Medallion architecture. Evolved an in-house ingestion framework to support legacy data pipelines feeding the new data design."
+    },
+    {
+      "id": "3",
+      "company": "Tata Consultancy Services",
+      "role": "Lead Data Engineer · Solution Designer · SME",
+      "location": "Delhi NCR & London",
+      "period": "Sep 2018 – Nov 2024",
+      "description": "Designed reusable ETL frameworks in Python and DBT for Banking & Finance clients. Migrated legacy on-premises applications to GCP (Dataflow, BigQuery). Achieved a 40% reduction in Spark job execution time through targeted tuning. Led cross-functional teams across requirements gathering, data warehouse design, and BDD/TDD testing strategies."
+    },
+    {
+      "id": "4",
+      "company": "Tata Consultancy Services",
+      "role": "Production Support Analyst",
+      "location": "Delhi NCR",
+      "period": "May 2017 – Sep 2018",
+      "description": "Automated manual production tasks, implemented seamless deployments, resolved complex escalated incidents, and created custom SQL/Tableau reports providing actionable insights."
+    },
+    {
+      "id": "5",
+      "company": "Tata Consultancy Services",
+      "role": "Senior Production Support Analyst · SME",
+      "location": "Delhi NCR & London",
+      "period": "Apr 2012 – Feb 2017",
+      "description": "Managed vendor relationships, championed change-control best practices, performed root cause analysis on production incidents, and utilised Splunk for log analysis, monitoring, and capacity planning."
+    },
+    {
+      "id": "6",
+      "company": "Tata Consultancy Services",
+      "role": "Developer",
+      "location": "Chennai",
+      "period": "Feb 2011 – Dec 2011",
+      "description": "Built dynamic web applications using HTML, CSS, JavaScript, and jQuery; collaborated cross-functionally to deliver projects on time."
+    }
+  ],
+  "education": [
+    {
+      "id": "1",
+      "institution": "Dr. A. P. J. Abdul Kalam Technical University, Lucknow",
+      "degree": "Bachelor of Technology — Computer Science & Engineering",
+      "period": "Completed June 2010"
+    }
+  ],
+  "certifications": [
+    "Google Cloud Professional Data Engineer",
+    "Azure AZ-900 (Udemy)",
+    "AWS Certified Cloud Practitioner (Udemy)",
+    "Scala Applied, Part 1",
+    "R Level 1 — Data Analytics with R",
+    "ITIL Foundation",
+    "Data Science Foundations: Fundamentals",
+    "Introduction to Data Science",
+    "Generative AI Fundamentals"
+  ],
+  "links": {
+    "linkedin": "https://www.linkedin.com/in/vikhyatksrivastava/",
+    "github": "https://github.com/vikhyatksrivastava?tab=repositories",
+    "email": "vikhyatsrivastava2012@gmail.com"
+  }
+}

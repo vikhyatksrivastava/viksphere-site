@@ -26,7 +26,13 @@ export async function GET(req: Request) {
     const cmd = new GetObjectCommand({ Bucket: bucket, Key: key })
     const signedUrl = await getSignedUrl(client, cmd, { expiresIn: 300 })
 
-    return Response.redirect(signedUrl, 302)
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: signedUrl,
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
+      },
+    })
   } catch (e: any) {
     return new Response(String(e?.message || e), { status: 500 })
   }

@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import fs from 'fs'
 import path from 'path'
 import PhotoGallery from './components/PhotoGallery'
@@ -8,41 +7,29 @@ import { resolveImage } from '../lib/image'
 export default function Home() {
 
   function getActivityTime(act: { slug: string; date?: string }) {
-    // Prefer an explicit YYYYMMDD in the slug first, then activity.date, then YYYY in slug
-    // Try to extract YYYYMMDD from the slug first
     const m8 = act.slug.match(/(\d{8})/)
     if (m8) {
       const s = m8[1]
-      const yyyy = Number(s.slice(0, 4))
-      const mm = Number(s.slice(4, 6)) - 1
-      const dd = Number(s.slice(6, 8))
-      const d = new Date(yyyy, mm, dd)
+      const d = new Date(Number(s.slice(0, 4)), Number(s.slice(4, 6)) - 1, Number(s.slice(6, 8)))
       if (!Number.isNaN(d.getTime())) return d.getTime()
     }
-    // Prefer the explicit activity.date field when present
     if (act.date) {
       const d = new Date(act.date)
       if (!Number.isNaN(d.getTime())) return d.getTime()
     }
-    // Try to extract year-only from the slug as a fallback
     const m4 = act.slug.match(/(\d{4})/)
     if (m4) {
-      const yyyy = Number(m4[1])
-      const d = new Date(yyyy, 0, 1)
+      const d = new Date(Number(m4[1]), 0, 1)
       if (!Number.isNaN(d.getTime())) return d.getTime()
     }
     return 0
   }
 
-  function getActivityDate(act: { slug: string; date?: string }) {
-    // Prefer explicit YYYYMMDD in slug first, then activity.date, then year-only in slug
+  function getActivityDate(act: { slug: string; date?: string }): Date | null {
     const m8 = act.slug.match(/(\d{8})/)
     if (m8) {
       const s = m8[1]
-      const yyyy = Number(s.slice(0, 4))
-      const mm = Number(s.slice(4, 6)) - 1
-      const dd = Number(s.slice(6, 8))
-      const d = new Date(yyyy, mm, dd)
+      const d = new Date(Number(s.slice(0, 4)), Number(s.slice(4, 6)) - 1, Number(s.slice(6, 8)))
       if (!Number.isNaN(d.getTime())) return d
     }
     if (act.date) {
@@ -51,8 +38,7 @@ export default function Home() {
     }
     const m4 = act.slug.match(/(\d{4})/)
     if (m4) {
-      const yyyy = Number(m4[1])
-      const d = new Date(yyyy, 0, 1)
+      const d = new Date(Number(m4[1]), 0, 1)
       if (!Number.isNaN(d.getTime())) return d
     }
     return null
@@ -68,94 +54,161 @@ export default function Home() {
     if (!d) return ''
     return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
   }
+
+  // Featured photos for gallery
+  const featured: { src: string; alt?: string }[] = []
+  const sorted = activities.slice().sort((a, b) => getActivityTime(b) - getActivityTime(a))
+  for (const act of sorted) {
+    if ((act as any).kind && (act as any).kind !== 'photo') continue
+    if (featured.length >= 6) break
+    try {
+      const dir = path.join(process.cwd(), 'public', 'images', 'photos', act.slug)
+      if (fs.existsSync(dir)) {
+        const files = fs.readdirSync(dir).filter((f) => /\.(jpe?g|png|svg|webp)$/i.test(f))
+        if (files.length > 0) {
+          featured.push({ src: resolveImage(`/images/photos/${act.slug}/${files[0]}`), alt: act.title })
+          continue
+        }
+      }
+    } catch { /* ignore */ }
+    if (act.cover) {
+      const c = act.cover.startsWith('http')
+        ? act.cover
+        : act.cover.replace(/^public[\\/]/, '/').replace(/^[^/]/, (s) => '/' + s)
+      featured.push({ src: resolveImage(c), alt: act.title })
+    }
+  }
+
+  // Latest grouped by month-year
+  const groups: Record<string, { label: string; items: typeof activities }> = {}
+  for (const act of activities.slice().sort((a, b) => getActivityTime(b) - getActivityTime(a))) {
+    const d = getActivityDate(act)
+    const key = d
+      ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      : 'unknown'
+    if (!groups[key]) {
+      groups[key] = {
+        label: d
+          ? d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }).replace(' ', '-')
+          : 'Unknown',
+        items: [],
+      }
+    }
+    groups[key].items.push(act)
+  }
+  const keys = Object.keys(groups).sort((a, b) => (a < b ? 1 : -1))
+
   return (
-    <main>
-      <section className="container-max px-6 py-12">
-        <h2 className="text-2xl font-semibold">Photography</h2>
-        <div className="mt-4">
-          {/* Featured images: take first image from each recent activity folder or fallback to activity.cover */}
-          {(() => {
-            const featured: { src: string; alt?: string }[] = []
-            const sorted = activities.slice().sort((a, b) => (getActivityTime(b) - getActivityTime(a)))
-            for (const act of sorted) {
-              // Only consider photo activities for the featured gallery
-              if ((act as any).kind && (act as any).kind !== 'photo') continue
-              if (featured.length >= 6) break
-              try {
-                const dir = path.join(process.cwd(), 'public', 'images', 'photos', act.slug)
-                if (fs.existsSync(dir)) {
-                  const files = fs.readdirSync(dir).filter((f) => /\.(jpe?g|png|svg|webp)$/i.test(f))
-                  if (files.length > 0) {
-                    featured.push({ src: resolveImage(`/images/photos/${act.slug}/${files[0]}`), alt: act.title })
-                    continue
-                  }
-                }
-              } catch (e) {
-                // ignore
-              }
-              if (act.cover) {
-                const c = act.cover.startsWith('http')
-                  ? act.cover
-                  : act.cover.replace(/^public[\\/]/, '/').replace(/^[^/]/, (s) => '/' + s)
-                featured.push({ src: resolveImage(c), alt: act.title })
-              }
-            }
-            return <PhotoGallery photos={featured} />
-          })()}
+    <div>
+      {/* ── Photography ─────────────────────────────────────────────── */}
+      <section className="container-max px-6 py-16 border-b border-slate-100 dark:border-slate-800/50">
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <span className="section-badge mb-3">Visual Stories</span>
+            <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Photography</h2>
+          </div>
+          <a
+            href="/photos"
+            className="shrink-0 flex items-center gap-1.5 text-sm text-teal-600 dark:text-teal-400 font-semibold hover:underline underline-offset-2"
+          >
+            View all
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
+        </div>
+        <PhotoGallery photos={featured} />
+      </section>
+
+      {/* ── Latest ──────────────────────────────────────────────────── */}
+      <section className="container-max px-6 py-16">
+        <div className="mb-10">
+          <span className="section-badge mb-3">What's New</span>
+          <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Latest</h2>
         </div>
 
-        <div className="mt-8">
-          <h3 className="text-xl font-semibold">Latest</h3>
-          <div className="mt-4 space-y-6">
-            {(() => {
-              // Group activities by month-year
-              const groups: Record<string, { label: string; items: typeof activities }> = {}
-              for (const act of activities.slice().sort((a, b) => getActivityTime(b) - getActivityTime(a))) {
-                const d = getActivityDate(act)
-                const key = d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` : 'unknown'
-                if (!groups[key]) groups[key] = { label: d ? d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }).replace(' ', '-') : 'Unknown', items: [] }
-                groups[key].items.push(act)
-              }
+        <div className="space-y-10">
+          {keys.map((k) => (
+            <div key={k}>
+              {/* Month divider */}
+              <div className="flex items-center gap-4 mb-5">
+                <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">
+                  {groups[k].label}
+                </h3>
+                <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
+              </div>
 
-              const keys = Object.keys(groups).sort((a, b) => (a < b ? 1 : -1))
-              return keys.map((k) => (
-                <section key={k}>
-                  <h4 className="text-lg font-medium">{groups[k].label}</h4>
-                  <div className="mt-3 space-y-4">
-                    {groups[k].items.map((act) => {
-                      const isBlog = (act as any).kind === 'blog'
-                      const externalUrl = isBlog ? ((act as any).url || extractUrlFromContent(act.content)) : null
-                      const href = externalUrl || `/photos/${act.slug}`
-                      return (
-                        <a key={act.slug} href={href} target={externalUrl ? '_blank' : undefined} rel={externalUrl ? 'noopener noreferrer' : undefined} className="block p-4 bg-[var(--surface-muted)] dark:bg-slate-800 rounded-md shadow-card hover:shadow-lg">
-                          <div className="flex items-center gap-4">
-                            {(() => {
-                              const cover = (act as any).kind === 'blog' ? '/images/photos/landscape-01.svg' : act.cover
-                              const src = cover
-                                ? resolveImage(cover.startsWith('http') ? cover : cover.replace(/^public[\\/]/, '/').replace(/^[^/]/, (s) => '/' + s))
-                                : null
-                              return src ? (
-                                <img src={src} alt="cover" className="w-28 h-20 object-cover rounded" />
-                              ) : (
-                                <div className="w-28 h-20 bg-slate-200 dark:bg-slate-700 rounded" />
-                              )
-                            })()}
-                            <div>
-                              <div className="text-lg font-medium">{act.title}</div>
-                              <div className="text-sm text-slate-500">{formatActivityDate(getActivityDate(act)) || act.date}</div>
-                              {act.excerpt && <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{act.excerpt}</p>}
-                            </div>
-                          </div>
-                        </a>
+              <div className="space-y-3">
+                {groups[k].items.map((act) => {
+                  const isBlog = (act as any).kind === 'blog'
+                  const externalUrl = isBlog
+                    ? ((act as any).url || extractUrlFromContent(act.content))
+                    : null
+                  const href = externalUrl || `/photos/${act.slug}`
+
+                  const coverRaw = isBlog ? '/images/photos/landscape-01.svg' : act.cover
+                  const src = coverRaw
+                    ? resolveImage(
+                        coverRaw.startsWith('http')
+                          ? coverRaw
+                          : coverRaw.replace(/^public[\\/]/, '/').replace(/^[^/]/, (s) => '/' + s)
                       )
-                    })}
-                  </div>
-                </section>
-              ))
-            })()}
-          </div>
+                    : null
+
+                  const dateStr = formatActivityDate(getActivityDate(act)) || act.date
+
+                  return (
+                    <a
+                      key={act.slug}
+                      href={href}
+                      target={externalUrl ? '_blank' : undefined}
+                      rel={externalUrl ? 'noopener noreferrer' : undefined}
+                      className="group block"
+                    >
+                      <div className="flex items-start gap-4 p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 hover:border-teal-200 dark:hover:border-teal-800/60 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
+                        {/* Thumbnail */}
+                        <div className="shrink-0 w-24 h-[72px] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
+                          {src ? (
+                            <img
+                              src={src}
+                              alt="cover"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full" />
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                              isBlog
+                                ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+                                : 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400'
+                            }`}>
+                              {isBlog ? 'Blog' : 'Photo'}
+                            </span>
+                            {dateStr && <span className="text-xs text-slate-400">{dateStr}</span>}
+                          </div>
+                          <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors leading-snug line-clamp-2">
+                            {act.title}
+                          </h4>
+                          {act.excerpt && (
+                            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 line-clamp-1">
+                              {act.excerpt}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </a>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
-    </main>
+    </div>
   )
 }

@@ -1,6 +1,7 @@
 import './globals.css'
-import Nav from './components/Nav'
 import DarkToggle from './components/DarkToggle'
+import PublicShell from './components/PublicShell'
+import Nav from './components/Nav'
 import Hero from './components/Hero'
 
 export const metadata = {
@@ -17,12 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"></script>
       </head>
       <body>
-        <div className="min-h-screen flex flex-col">
-          <Nav />
-          <Hero />
-          <main className="flex-1">{children}</main>
-          <footer className="p-4 text-sm text-center">© {new Date().getFullYear()} VikSphere</footer>
-        </div>
+        <PublicShell nav={<Nav />} hero={<Hero />}>{children}</PublicShell>
         <DarkToggle />
       </body>
     </html>
