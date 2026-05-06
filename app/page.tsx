@@ -3,21 +3,44 @@ import path from 'path'
 import PhotoGallery from './components/PhotoGallery'
 import { activities } from '../data/activities'
 import { resolveImage } from '../lib/image'
+import { readJson } from '../lib/adminData'
 
-export default function Home() {
+interface AdminAlbum { slug: string; title: string; date: string; excerpt: string; cover: string }
+interface AdminPost  { slug: string; title: string; url: string; excerpt: string; date: string }
 
-  function getActivityTime(act: { slug: string; date?: string }) {
-    const m8 = act.slug.match(/(\d{8})/)
+type FeedItem = {
+  slug: string
+  title: string
+  date: string
+  excerpt?: string
+  src?: string | null
+  kind: 'photo' | 'blog'
+  href: string
+  external: boolean
+}
+
+export default async function Home() {
+
+  const [adminAlbums, adminPosts] = await Promise.all([
+    readJson<AdminAlbum[]>('albums.json', []),
+    readJson<AdminPost[]>('posts.json', []),
+  ])
+
+  const adminAlbumSlugs = new Set(adminAlbums.map(a => a.slug))
+  const adminPostUrls   = new Set(adminPosts.map(p => p.url))
+
+  function getTime(slug: string, date?: string) {
+    const m8 = slug.match(/(\d{8})/)
     if (m8) {
       const s = m8[1]
       const d = new Date(Number(s.slice(0, 4)), Number(s.slice(4, 6)) - 1, Number(s.slice(6, 8)))
       if (!Number.isNaN(d.getTime())) return d.getTime()
     }
-    if (act.date) {
-      const d = new Date(act.date)
+    if (date) {
+      const d = new Date(date)
       if (!Number.isNaN(d.getTime())) return d.getTime()
     }
-    const m4 = act.slug.match(/(\d{4})/)
+    const m4 = slug.match(/(\d{4})/)
     if (m4) {
       const d = new Date(Number(m4[1]), 0, 1)
       if (!Number.isNaN(d.getTime())) return d.getTime()
@@ -25,18 +48,18 @@ export default function Home() {
     return 0
   }
 
-  function getActivityDate(act: { slug: string; date?: string }): Date | null {
-    const m8 = act.slug.match(/(\d{8})/)
+  function getDate(slug: string, date?: string): Date | null {
+    const m8 = slug.match(/(\d{8})/)
     if (m8) {
       const s = m8[1]
       const d = new Date(Number(s.slice(0, 4)), Number(s.slice(4, 6)) - 1, Number(s.slice(6, 8)))
       if (!Number.isNaN(d.getTime())) return d
     }
-    if (act.date) {
-      const d = new Date(act.date)
+    if (date) {
+      const d = new Date(date)
       if (!Number.isNaN(d.getTime())) return d
     }
-    const m4 = act.slug.match(/(\d{4})/)
+    const m4 = slug.match(/(\d{4})/)
     if (m4) {
       const d = new Date(Number(m4[1]), 0, 1)
       if (!Number.isNaN(d.getTime())) return d
@@ -44,23 +67,37 @@ export default function Home() {
     return null
   }
 
-  function extractUrlFromContent(content?: string) {
-    if (!content) return null
-    const m = content.match(/href=["']([^"']+)["']/i)
-    return m ? m[1] : null
-  }
-
-  function formatActivityDate(d: Date | null) {
+  function fmtDate(d: Date | null) {
     if (!d) return ''
     return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
   }
 
-  // Featured photos for gallery
+  function monthKey(d: Date | null) {
+    if (!d) return 'unknown'
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  }
+
+  function monthLabel(d: Date | null) {
+    if (!d) return 'Unknown'
+    return d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }).replace(' ', '-')
+  }
+
+  // ── Featured photos ──────────────────────────────────────────────────
   const featured: { src: string; alt?: string }[] = []
-  const sorted = activities.slice().sort((a, b) => getActivityTime(b) - getActivityTime(a))
-  for (const act of sorted) {
-    if ((act as any).kind && (act as any).kind !== 'photo') continue
+
+  // Admin albums first (newest)
+  for (const album of [...adminAlbums].sort((a, b) => getTime(a.slug, a.date) > getTime(b.slug, b.date) ? -1 : 1)) {
     if (featured.length >= 6) break
+    const src = resolveImage(album.cover)
+    if (src) featured.push({ src, alt: album.title })
+  }
+
+  // Fill remaining slots from activities
+  const sortedActs = activities.slice().sort((a, b) => getTime(b.slug, b.date) - getTime(a.slug, a.date))
+  for (const act of sortedActs) {
+    if (featured.length >= 6) break
+    if ((act as any).kind && (act as any).kind !== 'photo') continue
+    if (adminAlbumSlugs.has(act.slug)) continue
     try {
       const dir = path.join(process.cwd(), 'public', 'images', 'photos', act.slug)
       if (fs.existsSync(dir)) {
@@ -72,29 +109,73 @@ export default function Home() {
       }
     } catch { /* ignore */ }
     if (act.cover) {
-      const c = act.cover.startsWith('http')
-        ? act.cover
-        : act.cover.replace(/^public[\\/]/, '/').replace(/^[^/]/, (s) => '/' + s)
+      const c = act.cover.startsWith('http') ? act.cover : act.cover.replace(/^public[\\/]/, '/').replace(/^[^/]/, (s) => '/' + s)
       featured.push({ src: resolveImage(c), alt: act.title })
     }
   }
 
-  // Latest grouped by month-year
-  const groups: Record<string, { label: string; items: typeof activities }> = {}
-  for (const act of activities.slice().sort((a, b) => getActivityTime(b) - getActivityTime(a))) {
-    const d = getActivityDate(act)
-    const key = d
-      ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      : 'unknown'
-    if (!groups[key]) {
-      groups[key] = {
-        label: d
-          ? d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }).replace(' ', '-')
-          : 'Unknown',
-        items: [],
-      }
-    }
-    groups[key].items.push(act)
+  // ── Latest feed ──────────────────────────────────────────────────────
+  const feed: FeedItem[] = []
+
+  // Admin albums → photo feed items
+  for (const album of adminAlbums) {
+    feed.push({
+      slug: album.slug,
+      title: album.title,
+      date: album.date,
+      excerpt: album.excerpt,
+      src: resolveImage(album.cover),
+      kind: 'photo',
+      href: `/photos/${album.slug}`,
+      external: false,
+    })
+  }
+
+  // Admin posts → blog feed items (dedupe against hardcoded activities)
+  for (const post of adminPosts) {
+    feed.push({
+      slug: post.slug,
+      title: post.title,
+      date: post.date,
+      excerpt: post.excerpt,
+      src: '/images/photos/landscape-01.svg',
+      kind: 'blog',
+      href: post.url,
+      external: true,
+    })
+  }
+
+  // Activities (skip slugs already covered by admin albums)
+  for (const act of activities) {
+    if (adminAlbumSlugs.has(act.slug)) continue
+    const isBlog = (act as any).kind === 'blog'
+    const externalUrl = isBlog ? ((act as any).url || null) : null
+    if (isBlog && externalUrl && adminPostUrls.has(externalUrl)) continue
+
+    const coverRaw = isBlog ? '/images/photos/landscape-01.svg' : act.cover
+    const src = coverRaw
+      ? resolveImage(coverRaw.startsWith('http') ? coverRaw : coverRaw.replace(/^public[\\/]/, '/').replace(/^[^/]/, (s) => '/' + s))
+      : null
+
+    feed.push({
+      slug: act.slug,
+      title: act.title,
+      date: act.date ?? '',
+      excerpt: act.excerpt,
+      src,
+      kind: isBlog ? 'blog' : 'photo',
+      href: externalUrl ?? `/photos/${act.slug}`,
+      external: !!externalUrl,
+    })
+  }
+
+  // Group by month-year, sorted newest first
+  const groups: Record<string, { label: string; items: FeedItem[] }> = {}
+  for (const item of feed.sort((a, b) => getTime(b.slug, b.date) - getTime(a.slug, a.date))) {
+    const d = getDate(item.slug, item.date)
+    const key = monthKey(d)
+    if (!groups[key]) groups[key] = { label: monthLabel(d), items: [] }
+    groups[key].items.push(item)
   }
   const keys = Object.keys(groups).sort((a, b) => (a < b ? 1 : -1))
 
@@ -107,10 +188,7 @@ export default function Home() {
             <span className="section-badge mb-3">Visual Stories</span>
             <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Photography</h2>
           </div>
-          <a
-            href="/photos"
-            className="shrink-0 flex items-center gap-1.5 text-sm text-teal-600 dark:text-teal-400 font-semibold hover:underline underline-offset-2"
-          >
+          <a href="/photos" className="shrink-0 flex items-center gap-1.5 text-sm text-teal-600 dark:text-teal-400 font-semibold hover:underline underline-offset-2">
             View all
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -130,7 +208,6 @@ export default function Home() {
         <div className="space-y-10">
           {keys.map((k) => (
             <div key={k}>
-              {/* Month divider */}
               <div className="flex items-center gap-4 mb-5">
                 <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">
                   {groups[k].label}
@@ -139,71 +216,43 @@ export default function Home() {
               </div>
 
               <div className="space-y-3">
-                {groups[k].items.map((act) => {
-                  const isBlog = (act as any).kind === 'blog'
-                  const externalUrl = isBlog
-                    ? ((act as any).url || extractUrlFromContent(act.content))
-                    : null
-                  const href = externalUrl || `/photos/${act.slug}`
-
-                  const coverRaw = isBlog ? '/images/photos/landscape-01.svg' : act.cover
-                  const src = coverRaw
-                    ? resolveImage(
-                        coverRaw.startsWith('http')
-                          ? coverRaw
-                          : coverRaw.replace(/^public[\\/]/, '/').replace(/^[^/]/, (s) => '/' + s)
-                      )
-                    : null
-
-                  const dateStr = formatActivityDate(getActivityDate(act)) || act.date
-
-                  return (
-                    <a
-                      key={act.slug}
-                      href={href}
-                      target={externalUrl ? '_blank' : undefined}
-                      rel={externalUrl ? 'noopener noreferrer' : undefined}
-                      className="group block"
-                    >
-                      <div className="flex items-start gap-4 p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 hover:border-teal-200 dark:hover:border-teal-800/60 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-                        {/* Thumbnail */}
-                        <div className="shrink-0 w-24 h-[72px] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
-                          {src ? (
-                            <img
-                              src={src}
-                              alt="cover"
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                          ) : (
-                            <div className="w-full h-full" />
-                          )}
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                              isBlog
-                                ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
-                                : 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400'
-                            }`}>
-                              {isBlog ? 'Blog' : 'Photo'}
-                            </span>
-                            {dateStr && <span className="text-xs text-slate-400">{dateStr}</span>}
-                          </div>
-                          <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors leading-snug line-clamp-2">
-                            {act.title}
-                          </h4>
-                          {act.excerpt && (
-                            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 line-clamp-1">
-                              {act.excerpt}
-                            </p>
-                          )}
-                        </div>
+                {groups[k].items.map((item) => (
+                  <a
+                    key={item.slug}
+                    href={item.href}
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener noreferrer' : undefined}
+                    className="group block"
+                  >
+                    <div className="flex items-start gap-4 p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 hover:border-teal-200 dark:hover:border-teal-800/60 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
+                      <div className="shrink-0 w-24 h-[72px] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
+                        {item.src ? (
+                          <img src={item.src} alt="cover" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        ) : (
+                          <div className="w-full h-full" />
+                        )}
                       </div>
-                    </a>
-                  )
-                })}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                            item.kind === 'blog'
+                              ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+                              : 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400'
+                          }`}>
+                            {item.kind === 'blog' ? 'Blog' : 'Photo'}
+                          </span>
+                          {item.date && <span className="text-xs text-slate-400">{fmtDate(getDate(item.slug, item.date))}</span>}
+                        </div>
+                        <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors leading-snug line-clamp-2">
+                          {item.title}
+                        </h4>
+                        {item.excerpt && (
+                          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 line-clamp-1">{item.excerpt}</p>
+                        )}
+                      </div>
+                    </div>
+                  </a>
+                ))}
               </div>
             </div>
           ))}

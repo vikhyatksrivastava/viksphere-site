@@ -1,107 +1,130 @@
 import fs from 'fs'
 import path from 'path'
 import LightboxWrapper from '../../components/LightboxWrapper'
-import Image from 'next/image'
 import { activities } from '../../../data/activities'
 import { visitedPlaces } from '../../../data/travel'
 import { resolveImage } from '../../../lib/image'
 import { listKeys } from '../../../lib/r2'
+import { readJson } from '../../../lib/adminData'
 
-// Client wrapper imported above; renders client-only `LightboxGallery`.
+interface AdminAlbum { slug: string; title: string; date: string; excerpt: string; cover: string }
+
+function fmtDate(d: string | undefined) {
+  if (!d) return ''
+  const dt = new Date(d)
+  if (Number.isNaN(dt.getTime())) return d
+  return dt.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+}
 
 export default async function PhotoPost({ params }: { params: { slug: string } }) {
   const slug = params.slug
+
+  // Admin albums take priority — they live in R2, not in the static activities list
+  const adminAlbums = await readJson<AdminAlbum[]>('albums.json', [])
+  const adminAlbum = adminAlbums.find(a => a.slug === slug)
+
   const post = activities.find((a) => a.slug === slug)
   const travelPlace = visitedPlaces.find((p) => p.slug === slug)
-  if (!post && !travelPlace) return <main className="container-max px-6 py-12">Post not found</main>
 
-  // Look for images in public/images/photos/<slug>/
-  const imagesDir = path.join(process.cwd(), 'public', 'images', 'photos', slug)
+  if (!adminAlbum && !post && !travelPlace) {
+    return <main className="container-max px-6 py-12 text-slate-500">Post not found</main>
+  }
+
+  // ── Resolve images ───────────────────────────────────────────────────
   let images: string[] = []
-  try {
-    if (fs.existsSync(imagesDir)) {
-      images = fs
-        .readdirSync(imagesDir)
-        .filter((f) => /\.(jpe?g|png|svg|webp)$/i.test(f))
-        .map((f) => resolveImage(`/images/photos/${slug}/${f}`))
-    }
-  } catch (e) {
-    images = []
-  }
 
-  // If there are no local files, try listing objects from R2 under the album prefix
-  if (images.length === 0) {
+  if (adminAlbum) {
     try {
-      // bucket keys are stored as e.g. "valencia-visit-20251224/filename.jpg"
       const keys = await listKeys(`${slug}/`)
-      if (keys && keys.length) {
-        images = keys.filter((k) => /\.(jpe?g|png|svg|webp)$/i.test(k)).map((k) => resolveImage(k))
+      images = keys.filter(k => /\.(jpe?g|png|svg|webp)$/i.test(k)).map(k => resolveImage(k))
+    } catch { /* ignore */ }
+  } else {
+    // Static activity: local filesystem first
+    const imagesDir = path.join(process.cwd(), 'public', 'images', 'photos', slug)
+    try {
+      if (fs.existsSync(imagesDir)) {
+        images = fs.readdirSync(imagesDir)
+          .filter(f => /\.(jpe?g|png|svg|webp)$/i.test(f))
+          .map(f => resolveImage(`/images/photos/${slug}/${f}`))
       }
-    } catch (e) {
-      // ignore and fall back to cover
-    }
-  }
+    } catch { /* ignore */ }
 
-  // Fallback: if no local or R2-listed images, try to expand the cover into the album prefix
-  const coverToUse = post ? post.cover : undefined
-  if (images.length === 0 && coverToUse) {
-    const rawCover = coverToUse
-    // If cover is an absolute account URL, strip the account host to get the key
-    let coverKey = rawCover
-    const acct = process.env.R2_ACCOUNT_ID
-    if (coverKey && acct && coverKey.includes(acct)) {
-      // remove https://{acct}.r2.cloudflarestorage.com/
-      coverKey = coverKey.replace(new RegExp('^https?://'+acct.replace(/[-\\/\\^$*+?.()|[\]{}]/g,'\\$&')+'\\/'), '')
-    }
-    // normalize leading public/ or leading slash
-    coverKey = coverKey.replace(/^public[\\/]/, '').replace(/^\//, '')
-
-    // derive directory prefix from coverKey and try listing that prefix
-    const dirPrefix = coverKey.includes('/') ? coverKey.replace(/\\/g, '/').replace(/\/[^/]*$/, '') + '/' : ''
-    if (dirPrefix) {
-      try {
-        const keys = await listKeys(dirPrefix)
-        if (keys && keys.length) {
-          images = keys.filter((k) => /\.(jpe?g|png|svg|webp)$/i.test(k)).map((k) => resolveImage(k))
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-
-    // if still empty, fall back to single cover
+    // R2 fallback
     if (images.length === 0) {
-      images = [resolveImage(coverKey.startsWith('http') ? coverKey : '/' + coverKey)]
+      try {
+        const keys = await listKeys(`${slug}/`)
+        if (keys.length) {
+          images = keys.filter(k => /\.(jpe?g|png|svg|webp)$/i.test(k)).map(k => resolveImage(k))
+        }
+      } catch { /* ignore */ }
+    }
+
+    // Cover fallback
+    const coverToUse = post?.cover
+    if (images.length === 0 && coverToUse) {
+      let coverKey = coverToUse
+      const acct = process.env.R2_ACCOUNT_ID
+      if (coverKey && acct && coverKey.includes(acct)) {
+        coverKey = coverKey.replace(new RegExp('^https?://' + acct.replace(/[-\\/^$*+?.()|[\]{}]/g, '\\$&') + '\\/'), '')
+      }
+      coverKey = coverKey.replace(/^public[\\/]/, '').replace(/^\//, '')
+      const dirPrefix = coverKey.includes('/') ? coverKey.replace(/\\/g, '/').replace(/\/[^/]*$/, '') + '/' : ''
+      if (dirPrefix) {
+        try {
+          const keys = await listKeys(dirPrefix)
+          if (keys.length) images = keys.filter(k => /\.(jpe?g|png|svg|webp)$/i.test(k)).map(k => resolveImage(k))
+        } catch { /* ignore */ }
+      }
+      if (images.length === 0) {
+        images = [resolveImage(coverKey.startsWith('http') ? coverKey : '/' + coverKey)]
+      }
     }
   }
 
-  // Prepare title/content when rendering a travelPlace default page
-  const title = post ? post.title : travelPlace ? travelPlace.name : 'Post'
-  const date = post ? post.date : undefined
-  const contentHtml = post ? (post.content ?? '') : travelPlace ? `<p>Notes and photos from ${travelPlace.name}, ${travelPlace.country}.</p>` : ''
+  const title    = adminAlbum?.title   ?? (post ? post.title   : travelPlace!.name)
+  const date     = adminAlbum?.date    ?? post?.date
+  const excerpt  = adminAlbum?.excerpt ?? post?.excerpt
+  const contentHtml = !adminAlbum && post ? (post.content ?? '') : ''
+  const coverSrc = adminAlbum ? resolveImage(adminAlbum.cover) : (images[0] ?? null)
 
   return (
-    <main className="container-max px-6 py-12">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-semibold">{title}</h1>
-        {date && <p className="text-sm text-slate-500 mt-2">{date}</p>}
-
-        <div className="mt-6 prose max-w-none" dangerouslySetInnerHTML={{ __html: contentHtml }} />
-
-      {images.length > 0 && (
-        <section className="mt-8">
-          <h2 className="text-xl font-medium mb-4">Gallery</h2>
-          {/* LightboxGallery shows thumbnails and opens single-image lightbox navigation */}
-          <div>
-            {/* Client component imported below */}
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <div id="lightbox-root">
-              {/* Rendered client-side: */}
-              <LightboxWrapper images={images} />
-            </div>
+    <main className="min-h-screen">
+      {/* ── Hero ────────────────────────────────────────────────────── */}
+      <div className="relative h-64 sm:h-96 overflow-hidden bg-slate-900">
+        {coverSrc && (
+          <img
+            src={coverSrc}
+            alt={title}
+            className="absolute inset-0 w-full h-full object-cover opacity-55"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 container-max px-6 pb-8">
+          <span className="section-badge mb-3">Photography</span>
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-tight">{title}</h1>
+          <div className="flex items-center gap-3 mt-2 flex-wrap">
+            {date && <span className="text-sm text-slate-300">{fmtDate(date)}</span>}
+            {images.length > 0 && (
+              <>
+                <span className="text-slate-500">·</span>
+                <span className="text-sm text-slate-300">{images.length} photo{images.length !== 1 ? 's' : ''}</span>
+              </>
+            )}
           </div>
-        </section>
-      )}
+          {excerpt && <p className="mt-3 text-slate-300 max-w-2xl text-sm leading-relaxed">{excerpt}</p>}
+        </div>
+      </div>
+
+      {/* ── Gallery ─────────────────────────────────────────────────── */}
+      <div className="container-max px-6 py-10">
+        {contentHtml && (
+          <div className="prose dark:prose-invert max-w-2xl mb-10" dangerouslySetInnerHTML={{ __html: contentHtml }} />
+        )}
+        {images.length > 0 ? (
+          <LightboxWrapper images={images} />
+        ) : (
+          <p className="text-center text-slate-400 py-16">No photos available yet.</p>
+        )}
       </div>
     </main>
   )
