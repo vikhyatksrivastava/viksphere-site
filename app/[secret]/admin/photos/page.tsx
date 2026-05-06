@@ -12,7 +12,7 @@ export default async function AdminPhotosPage({ params }: Props) {
   const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
   if (!session.isLoggedIn) redirect(`/${secret}/admin/login`)
 
-  const albums = readJson('albums.json', [])
+  const albums = await readJson('albums.json', [])
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">

@@ -49,7 +49,7 @@ export default async function BlogPage() {
     displayImage = ogImage
   }
 
-  const adminPosts = readJson<AdminPost[]>('posts.json', []).map(p => ({
+  const adminPosts = (await readJson<AdminPost[]>('posts.json', [])).map(p => ({
     title: p.title,
     excerpt: p.excerpt || 'Click to read the original on LinkedIn.',
     url: p.url,

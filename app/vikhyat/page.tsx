@@ -22,8 +22,8 @@ const DEFAULT: PortfolioFull = {
   skills: [], experience: [], education: [], certifications: [], links: {},
 }
 
-export default function VikhyatPage() {
-  const p = readJson<PortfolioFull>('portfolio.json', DEFAULT)
+export default async function VikhyatPage() {
+  const p = await readJson<PortfolioFull>('portfolio.json', DEFAULT)
   const hasProfile = fs.existsSync(path.join(process.cwd(), 'public', 'images', 'vikhyat-profile.jpg'))
 
   return (

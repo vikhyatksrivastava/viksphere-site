@@ -38,7 +38,7 @@ const DEFAULT: PortfolioData = {
 export async function GET() {
   const deny = await requireAdmin()
   if (deny) return deny
-  return NextResponse.json(readJson<PortfolioData>('portfolio.json', DEFAULT))
+  return NextResponse.json(await readJson<PortfolioData>('portfolio.json', DEFAULT))
 }
 
 export async function PUT(request: Request) {
@@ -48,7 +48,7 @@ export async function PUT(request: Request) {
   const body = await request.json().catch(() => null)
   if (!body) return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
 
-  const current = readJson<PortfolioData>('portfolio.json', DEFAULT)
+  const current = await readJson<PortfolioData>('portfolio.json', DEFAULT)
   const updated: PortfolioData = {
     headline:       body.headline       ?? current.headline,
     tagline:        body.tagline        ?? current.tagline,
@@ -63,6 +63,6 @@ export async function PUT(request: Request) {
     certifications: Array.isArray(body.certifications) ? body.certifications : current.certifications,
     links:          body.links          ?? current.links,
   }
-  writeJson('portfolio.json', updated)
+  await writeJson('portfolio.json', updated)
   return NextResponse.json(updated)
 }

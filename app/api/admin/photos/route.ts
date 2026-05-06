@@ -14,7 +14,7 @@ export interface Album {
 export async function GET() {
   const deny = await requireAdmin()
   if (deny) return deny
-  return NextResponse.json(readJson<Album[]>('albums.json', []))
+  return NextResponse.json(await readJson<Album[]>('albums.json', []))
 }
 
 export async function POST(request: Request) {
@@ -39,14 +39,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: `No images found in R2 folder "${slug}/"` }, { status: 400 })
   }
 
-  const albums = readJson<Album[]>('albums.json', [])
+  const albums = await readJson<Album[]>('albums.json', [])
   if (albums.some(a => a.slug === slug)) {
     return NextResponse.json({ error: `Album "${slug}" already exists` }, { status: 409 })
   }
 
   const album: Album = { slug, title, date, excerpt, cover: coverKey }
   albums.unshift(album)
-  writeJson('albums.json', albums)
+  await writeJson('albums.json', albums)
 
   return NextResponse.json(album, { status: 201 })
 }
@@ -58,8 +58,8 @@ export async function DELETE(request: Request) {
   const { slug } = await request.json().catch(() => ({}))
   if (!slug) return NextResponse.json({ error: 'slug required' }, { status: 400 })
 
-  const albums = readJson<Album[]>('albums.json', [])
-  writeJson('albums.json', albums.filter(a => a.slug !== slug))
+  const albums = await readJson<Album[]>('albums.json', [])
+  await writeJson('albums.json', albums.filter(a => a.slug !== slug))
 
   return NextResponse.json({ ok: true })
 }

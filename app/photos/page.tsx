@@ -9,8 +9,8 @@ import { readJson } from '../../lib/adminData'
 
 interface AdminAlbum { slug: string; title: string; date: string; excerpt: string; cover: string }
 
-export default function PhotosPage() {
-  const adminAlbums = readJson<AdminAlbum[]>('albums.json', [])
+export default async function PhotosPage() {
+  const adminAlbums = await readJson<AdminAlbum[]>('albums.json', [])
 
   function getActivityDate(act: { slug: string; date?: string }): Date | null {
     const m8 = act.slug.match(/(\d{8})/)

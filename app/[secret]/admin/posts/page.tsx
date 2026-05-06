@@ -12,7 +12,7 @@ export default async function AdminPostsPage({ params }: Props) {
   const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
   if (!session.isLoggedIn) redirect(`/${secret}/admin/login`)
 
-  const posts = readJson('posts.json', [])
+  const posts = await readJson('posts.json', [])
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">

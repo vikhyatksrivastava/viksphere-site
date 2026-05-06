@@ -7,8 +7,8 @@ const DEFAULT: PortfolioData = {
   bio: '— Vikhyat',
 }
 
-export default function Hero() {
-  const portfolio = readJson<PortfolioData>('portfolio.json', DEFAULT)
+export default async function Hero() {
+  const portfolio = await readJson<PortfolioData>('portfolio.json', DEFAULT)
 
   return (
     <div role="banner" className="relative overflow-hidden bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800/50">

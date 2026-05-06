@@ -21,7 +21,7 @@ export default async function AdminPortfolioPage({ params }: Props) {
   const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
   if (!session.isLoggedIn) redirect(`/${secret}/admin/login`)
 
-  const portfolio = readJson('portfolio.json', DEFAULT)
+  const portfolio = await readJson('portfolio.json', DEFAULT)
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
