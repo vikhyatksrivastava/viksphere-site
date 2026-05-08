@@ -27,8 +27,8 @@ function fmtDate(d: string | undefined) {
   return dt.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-export default async function PhotoPost({ params }: { params: { slug: string } }) {
-  const slug = params.slug
+export default async function PhotoPost({ params }: { params: Promise<{ slug: string }> }) {
+  const slug = (await params).slug
 
   // Admin albums take priority — they live in R2, not in the static activities list
   const adminAlbums = await readJson<AdminAlbum[]>('albums.json', [])
