@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
-import { requireAdmin } from '../../lib/requireAdmin'
+import { requireAdmin } from '../../../lib/requireAdmin'
 
 const ALLOWED_TYPES = /^image\/(jpeg|png|gif|webp|svg\+xml|avif)$/i
 const MAX_BYTES = 10 * 1024 * 1024  // 10 MB
