@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model SiteSettings {
+  id                 Int     @id @default(autoincrement())
+  title              String?
+  enablePhotography  Boolean @default(true)
+  enableBlog         Boolean @default(true)
+  enableTech         Boolean @default(true)
+  enableMusic        Boolean @default(true)
+}
+
+model Photo {
+  id          Int      @id @default(autoincrement())
+  title       String?
+  publicId    String   @unique
+  takenAt     DateTime?
+  location    String?
+  description String?
+}
+
+model BlogPost {
+  id          Int      @id @default(autoincrement())
+  title       String
+  slug        String   @unique
+  category    String?
+  publishedAt DateTime?
+  excerpt     String?
+  content     String?
+}
+
+model Artifact {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  repoUrl     String?
+  tags        String[] @default([])
+}
+
+model ContactMessage {
+  id         Int      @id @default(autoincrement())
+  name       String?
+  email      String?
+  message    String
+  receivedAt DateTime @default(now())
+}

@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Merriweather:wght@400;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base ──────────────────────────────────────────────────────────── */
+html, body, #__next { height: 100%; }
+
+body {
+  @apply bg-white text-slate-800;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dark body { @apply bg-slate-950 text-slate-100; }
+
+/* ── Design tokens ─────────────────────────────────────────────────── */
+:root {
+  --color-primary:       #0f766e;
+  --color-primary-light: #14b8a6;
+  --color-accent:        #f97316;
+  --surface:             #ffffff;
+  --surface-muted:       #f8fafc;
+  --border:              #e2e8f0;
+  --radius-sm:           8px;
+  --radius-md:           12px;
+  --radius-lg:           16px;
+  --radius-xl:           24px;
+  --shadow-card:         0 1px 3px rgba(15,23,42,0.05), 0 4px 16px rgba(15,23,42,0.05);
+  --shadow-hover:        0 4px 24px rgba(15,23,42,0.12);
+}
+
+.dark {
+  --surface:             #0f172a;
+  --surface-muted:       #1e293b;
+  --border:              #334155;
+  --shadow-card:         0 1px 3px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.2);
+  --shadow-hover:        0 4px 24px rgba(0,0,0,0.35);
+}
+
+a { color: var(--color-primary); }
+
+/* ── Layout ────────────────────────────────────────────────────────── */
+.container-max {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Card ──────────────────────────────────────────────────────────── */
+.shadow-card { box-shadow: var(--shadow-card); }
+
+/* ── Section badge ─────────────────────────────────────────────────── */
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.8rem;
+  border-radius: 9999px;
+  background: rgba(15, 118, 110, 0.07);
+  border: 1px solid rgba(15, 118, 110, 0.16);
+  color: var(--color-primary);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.dark .section-badge {
+  background: rgba(20, 184, 166, 0.1);
+  border-color: rgba(20, 184, 166, 0.2);
+  color: var(--color-primary-light);
+}
+
+/* ── Glassmorphism ─────────────────────────────────────────────────── */
+.glass-card {
+  background: rgba(255,255,255,0.60);
+  border: 1px solid rgba(255,255,255,0.40);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+.dark .glass-card {
+  background: rgba(15,23,42,0.55);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.glass-overlay { position: absolute; inset: 0; pointer-events: none; }
+
+.glass-overlay .glass-card {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.15);
+  backdrop-filter: blur(6px);
+}
+
+.dark .glass-overlay .glass-card {
+  background: rgba(15,23,42,0.10);
+  border-color: rgba(255,255,255,0.04);
+}
+
+/* ── Gradient text ─────────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.color-range {
+  height: 8px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+}
+
+/* ── Focus ─────────────────────────────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Prose ─────────────────────────────────────────────────────────── */
+.prose { line-height: 1.75; }
+.prose h2, .prose h3 { font-weight: 700; margin-top: 2rem; }
+.prose p { margin-top: 1rem; }
+.prose a { color: var(--color-primary); text-decoration: underline; }
+
+/* ── Line clamp ────────────────────────────────────────────────────── */
+.line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }

@@ -1,0 +1,120 @@
+# VikSphere — local development stack
+#
+# Usage:
+#   docker compose up          — start everything (first run builds the image)
+#   docker compose up --build  — rebuild after package.json changes
+#   docker compose down -v     — stop and remove volumes (full reset)
+#
+# Services:
+#   app      → http://localhost:3000  (Next.js, hot-reload via volume mount)
+#   postgres → localhost:5432
+#   minio    → http://localhost:9000  (S3 API used internally by the app)
+#   minio    → http://localhost:9001  (MinIO web console — browse/manage files)
+
+services:
+
+  # ── PostgreSQL ─────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: viksphere
+      POSTGRES_USER: viksphere
+      POSTGRES_PASSWORD: viksphere_dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"   # host:container — use 5433 to avoid conflict with local Postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U viksphere -d viksphere"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── MinIO (local Cloudflare R2 replacement) ────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: viksphere_dev
+      MINIO_ROOT_PASSWORD: viksphere_dev_secret
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"   # S3 API (used by the Next.js app internally)
+      - "9001:9001"   # Web console → http://localhost:9001
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── MinIO bucket bootstrap (runs once, exits) ─────────────────────────────
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mc alias set local http://minio:9000 viksphere_dev viksphere_dev_secret
+        mc mb --ignore-existing local/viksphere-images
+        mc anonymous set download local/viksphere-images
+        echo "MinIO bucket ready."
+
+  # ── Next.js application ────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    volumes:
+      - .:/app                       # Source code — edits on host trigger HMR
+      - node_modules:/app/node_modules  # Pinned: container's node_modules, not host's
+      - next_cache:/app/.next           # Pinned: Next.js build cache
+    environment:
+      NODE_ENV: development
+
+      # Database
+      DATABASE_URL: postgresql://viksphere:viksphere_dev@postgres:5432/viksphere
+
+      # MinIO (R2-compatible — existing lib/r2.ts and lib/adminData.ts use this)
+      R2_ACCOUNT_ID: viksphere_dev
+      R2_ACCESS_KEY_ID: viksphere_dev
+      R2_SECRET_ACCESS_KEY: viksphere_dev_secret
+      R2_BUCKET: viksphere-images
+      R2_ENDPOINT: http://minio:9000   # Overrides the Cloudflare R2 endpoint
+
+      # Public URL (used in sitemap, robots.txt, OG tags)
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+
+      # Admin portal — change these before first use
+      ADMIN_SECRET_KEY: local_dev_secret_key
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin_local_password
+      SESSION_SECRET: local_dev_session_secret_must_be_32chars
+
+      # Hot-reload polling (required for volume-mounted source on some Docker hosts)
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+
+      # Cloudinary is intentionally NOT set here — /api/upload falls back to MinIO
+      # when CLOUDINARY_UPLOAD_PRESET is absent. Set it here to use real Cloudinary.
+      # NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: your_cloud_name
+      # CLOUDINARY_UPLOAD_PRESET: your_unsigned_preset
+
+volumes:
+  postgres_data:
+  minio_data:
+  node_modules:    # Keeps container's node_modules isolated from host filesystem
+  next_cache:      # Keeps Next.js incremental build cache across restarts

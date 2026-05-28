@@ -1,0 +1,33 @@
+﻿node_modules/
+.next/
+.vscode/
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build
+dist/
+build/
+
+# Misc
+coverage/
+.idea/
+
+# OS files
+Thumbs.db
+
+# Docker local overrides (machine-specific, never commit)
+docker-compose.override.yml
+docker-compose.local.yml
+
+# MinIO / Postgres data if ever bind-mounted locally
+minio-data/
+postgres-data/

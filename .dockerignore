@@ -1,0 +1,26 @@
+# Dependencies and build output — never copy these into the image.
+# They are installed fresh during the Docker build (npm ci).
+node_modules
+.next
+
+# Git history
+.git
+.gitignore
+
+# Local environment files — secrets must NEVER enter the image
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / OS artifacts
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+
+# Test output
+coverage
