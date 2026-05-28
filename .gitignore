@@ -31,3 +31,10 @@ docker-compose.local.yml
 # MinIO / Postgres data if ever bind-mounted locally
 minio-data/
 postgres-data/
+
+# TypeScript build cache (generated artifact, not source)
+tsconfig.tsbuildinfo
+
+# Dev / planning notes — not project source
+context.md
+promt_responses.txt
